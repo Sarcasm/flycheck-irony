@@ -35,17 +35,18 @@
 (require 'irony-diagnostics)
 
 (require 'flycheck)
+(require 'pcase)
 
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
-    (if (member severity '(note warning error fatal))
+    (if (memq severity '(note warning error fatal))
         (flycheck-error-new-at
          (irony-diagnostics-line diagnostic)
          (irony-diagnostics-column diagnostic)
-         (cdr (assoc severity '((note    . info)
-                                (warning . warning)
-                                (error   . error)
-                                (fatal   . error))))
+         (pcase severity
+           (`note 'info)
+           (`warning 'warning)
+           ((or `error `fatal) 'error))
          (irony-diagnostics-message diagnostic)
          :checker checker
          :buffer buffer
