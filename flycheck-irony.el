@@ -6,7 +6,7 @@
 ;; Keywords: convenience, tools, c
 ;; Version: 0.1.0-cvs
 ;; URL: https://github.com/Sarcasm/flycheck-irony/
-;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (irony "0.2.0-cvs2"))
+;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (irony "0.2.0-cvs4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -35,7 +35,9 @@
 (require 'irony-diagnostics)
 
 (require 'flycheck)
-(require 'pcase)
+
+(eval-when-compile
+  (require 'pcase))
 
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
@@ -54,14 +56,17 @@
 
 (defun flycheck-irony--start (checker callback)
   (let ((buffer (current-buffer)))
-    (irony-diagnostics--async
-     #'(lambda () ;; closure, lexically bound
-         (let ((errors (mapcar
-                        #'(lambda (diagnostic)
-                            (flycheck-irony--build-error checker buffer
-                                                         diagnostic))
-                        (irony-diagnostics))))
-           (funcall callback 'finished (delq nil errors)))))))
+    (irony-diagnostics-async
+     #'(lambda (status &rest args) ;; closure, lexically bound
+         (pcase status
+           (`error (funcall callback 'errored (car args)))
+           (`cancelled (funcall callback 'errored nil))
+           (`success
+            (let* ((diagnostics (car args))
+                   (errors (mapcar #'(lambda (diagnostic)
+                                       (flycheck-irony--build-error checker buffer diagnostic))
+                                   diagnostics)))
+              (funcall callback 'finished (delq nil errors)))))))))
 
 (defun flycheck-irony--verify (checker)
   "Verify the Flycheck Irony syntax checker."
