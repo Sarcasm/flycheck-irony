@@ -60,7 +60,7 @@
      #'(lambda (status &rest args) ;; closure, lexically bound
          (pcase status
            (`error (funcall callback 'errored (car args)))
-           (`cancelled (funcall callback 'errored nil))
+           (`cancelled (funcall callback 'finished nil))
            (`success
             (let* ((diagnostics (car args))
                    (errors (mapcar #'(lambda (diagnostic)
