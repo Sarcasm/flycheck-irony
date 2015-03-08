@@ -28,7 +28,7 @@
 ;; Usage:
 ;;
 ;;     (eval-after-load 'flycheck
-;;       '(add-to-list 'flycheck-checkers 'irony))
+;;       '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 
 ;;; Code:
 
@@ -94,6 +94,14 @@
   :error-filter #'identity
   :predicate #'(lambda ()
                  irony-mode))
+
+;;;###autoload
+(defun flycheck-irony-setup ()
+  "Setup Flycheck Irony.
+
+Add `irony' to `flycheck-checkers'."
+  (interactive)
+  (add-to-list 'flycheck-checkers 'irony))
 
 (provide 'flycheck-irony)
 
