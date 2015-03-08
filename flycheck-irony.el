@@ -27,6 +27,7 @@
 ;;
 ;; Usage:
 ;;
+;;     (require 'flycheck-irony)
 ;;     (eval-after-load 'flycheck
 ;;       '(add-to-list 'flycheck-checkers 'irony))
 
