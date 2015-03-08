@@ -13,7 +13,7 @@ a package manager:
 
 * Using [MELPA](http://melpa.milkbox.net/)
 
-        M-x package-install RET company-irony RET
+        M-x package-install RET flycheck-irony RET
 
 
 ## Configuration
@@ -21,6 +21,7 @@ a package manager:
 Add `irony` to your flycheck checkers.
 
 ~~~el
+(require 'flycheck-irony)
 (eval-after-load 'flycheck
   '(add-to-list 'flycheck-checkers 'irony))
 ~~~
