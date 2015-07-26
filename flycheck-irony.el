@@ -39,6 +39,10 @@
 (eval-when-compile
   (require 'pcase))
 
+(defvar flycheck-irony--ignored-error
+  (list "#pragma once in main file")
+  "Error messages to ignore.")
+
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
     (if (memq severity '(note warning error fatal))
@@ -62,10 +66,15 @@
            (`error (funcall callback 'errored (car args)))
            (`cancelled (funcall callback 'finished nil))
            (`success
-            (let* ((diagnostics (car args))
+            (let* ((filtered (cl-remove-if
+                              (lambda (i)
+                                (cl-member
+                                 (irony-diagnostics-message i)
+                                 flycheck-irony--ignored-error :test 'string=))
+                              (car args)))
                    (errors (mapcar #'(lambda (diagnostic)
                                        (flycheck-irony--build-error checker buffer diagnostic))
-                                   diagnostics)))
+                                   filtered)))
               (funcall callback 'finished (delq nil errors)))))))))
 
 (defun flycheck-irony--verify (_checker)
