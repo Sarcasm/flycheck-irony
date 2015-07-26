@@ -68,7 +68,7 @@
                                    diagnostics)))
               (funcall callback 'finished (delq nil errors)))))))))
 
-(defun flycheck-irony--verify (checker)
+(defun flycheck-irony--verify (_checker)
   "Verify the Flycheck Irony syntax checker."
   (list
    (flycheck-verification-result-new
