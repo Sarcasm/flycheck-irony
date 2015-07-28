@@ -39,6 +39,18 @@
 (eval-when-compile
   (require 'pcase))
 
+(defgroup flycheck-irony nil
+  "Irony-Mode's flycheck checker."
+  :group 'irony)
+
+(defcustom flycheck-irony-error-filter #'identity
+  "A function to filter the errors returned by this checker.
+
+See :error-filter description in `flycheck-define-generic-checker'.
+For an example, take a look at `flycheck-dequalify-error-ids'."
+  :type 'function
+  :group 'flycheck-irony)
+
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
     (if (memq severity '(note warning error fatal))
@@ -91,7 +103,7 @@
   :start #'flycheck-irony--start
   :verify #'flycheck-irony--verify
   :modes irony-supported-major-modes
-  :error-filter #'identity
+  :error-filter flycheck-irony-error-filter
   :predicate #'(lambda ()
                  irony-mode))
 
