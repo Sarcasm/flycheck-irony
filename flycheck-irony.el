@@ -39,6 +39,11 @@
 (eval-when-compile
   (require 'pcase))
 
+(defvar-local flycheck-irony-filter
+  #'identity
+  "Filter all errors before displaying.
+For an example, take a look at `flycheck-dequalify-error-ids`.")
+
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
     (if (memq severity '(note warning error fatal))
@@ -91,7 +96,7 @@
   :start #'flycheck-irony--start
   :verify #'flycheck-irony--verify
   :modes irony-supported-major-modes
-  :error-filter #'identity
+  :error-filter flycheck-irony-filter
   :predicate #'(lambda ()
                  irony-mode))
 
