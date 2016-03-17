@@ -4,9 +4,9 @@
 
 ;; Author: Guillaume Papin <guillaume.papin@epitech.eu>
 ;; Keywords: convenience, tools, c
-;; Version: 0.1.0-cvs
+;; Version: 0.1.0
 ;; URL: https://github.com/Sarcasm/flycheck-irony/
-;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (irony "0.2.0-cvs4"))
+;; Package-Requires: ((emacs "24.1") (flycheck "0.22") (irony "0.2.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
