@@ -51,10 +51,60 @@ For an example, take a look at `flycheck-dequalify-error-ids'."
   :type 'function
   :group 'flycheck-irony)
 
+(cl-defstruct (flycheck-irony-error
+               (:include flycheck-error)
+               (:constructor flycheck-irony-error-new-at (line column
+                                                               &optional level message
+                                                               &key checker id
+                                                               (filename (buffer-file-name))
+                                                               (buffer (current-buffer))
+                                                               column-end
+                                                               )))
+  "Structure representing an error reported by the Irony syntax checker.
+Added slots:
+
+`column-end'
+     The column number the error ends on, as number."
+  column-end)
+
+(defun flycheck-irony--error-region (orig-fun &rest args)
+  "Finding region for error.  If we have the end column, we have all we need.
+If we don't have the end column, just call flycheck's ORIG-FUN with ARGS."
+  (let ((err (nth 0 args))
+        (start 0)
+        (end 0))
+    (when (string-equal (symbol-name (flycheck-error-checker err)) "irony")
+      (let ((column (- (flycheck-irony-error-column err) 1))
+            (column-end (- (flycheck-irony-error-column-end err) 1)))
+        (when (> column-end 0)
+          (flycheck-error-with-buffer err
+            (save-restriction
+              (save-excursion
+                (widen)
+                (goto-char (point-min))
+                (forward-line (- (flycheck-irony-error-line err) 1))
+                (setq start (+ (point) column))
+                (setq end (+ (point) column-end))))))))
+    (if (and (> start 0) (> end 0))
+        (cons start end)
+      (progn
+        (if (fboundp 'add-function)
+            (apply orig-fun args)
+          nil)))))
+
+(if (fboundp 'add-function)
+    (add-function :around (symbol-function 'flycheck-error-region-for-mode) 'flycheck-irony--error-region)
+  (defadvice flycheck-error-region-for-mode (around flycheck-irony--error-region-advice (err mode) activate)
+    "Finding region for error using Irony supplied end column.  Else call standard Flycheck function."
+    (let (region (flycheck-irony--error-region 'flycheck-error-region-for-mode err mode))
+      (if region
+          region
+        ad-do-it))))
+
 (defun flycheck-irony--build-error (checker buffer diagnostic)
   (let ((severity (irony-diagnostics-severity diagnostic)))
     (if (memq severity '(note warning error fatal))
-        (flycheck-error-new-at
+        (flycheck-irony-error-new-at
          (irony-diagnostics-line diagnostic)
          (irony-diagnostics-column diagnostic)
          (pcase severity
@@ -64,7 +114,8 @@ For an example, take a look at `flycheck-dequalify-error-ids'."
          (irony-diagnostics-message diagnostic)
          :checker checker
          :buffer buffer
-         :filename (irony-diagnostics-file diagnostic)))))
+         :filename (irony-diagnostics-file diagnostic)
+         :column-end (irony-diagnostics-column-end diagnostic)))))
 
 (defun flycheck-irony--start (checker callback)
   (let ((buffer (current-buffer)))
