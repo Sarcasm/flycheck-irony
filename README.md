@@ -19,6 +19,7 @@ a package manager:
 ## Configuration
 
 ~~~el
+(require 'flycheck-irony)
 (eval-after-load 'flycheck
   '(add-hook 'flycheck-mode-hook #'flycheck-irony-setup))
 ~~~
