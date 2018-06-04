@@ -90,13 +90,12 @@ For an example, take a look at `flycheck-dequalify-error-ids'."
 
    ;; FIXME: the logic of `irony--locate-server-executable' could be extracted
    ;; into something very useful for this verification
-   (let* ((server-path (expand-file-name "bin/irony-server"
-                                         irony-server-install-prefix))
-          (server-found (file-exists-p server-path)))
+   (let* ((server-path (executable-find (expand-file-name "bin/irony-server"
+                                                          irony-server-install-prefix))))
      (flycheck-verification-result-new
       :label "irony-server"
-      :message (if server-found (format "Found at %s" server-path) "Not found")
-      :face (if server-found 'success '(bold error))))))
+      :message (if server-path (format "Found at %s" server-path) "Not found")
+      :face (if server-path 'success '(bold error))))))
 
 (flycheck-define-generic-checker 'irony
   "A syntax checker for C, C++ and Objective-C, using Irony Mode."
